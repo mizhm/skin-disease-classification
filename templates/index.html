@@ -1,0 +1,181 @@
+<!-- Updated index.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <title>Skin Disease Diagnosis</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="page-header">
+        <h1>Skin Disease Diagnosis</h1>
+        <p>
+          Upload a clear image of the skin condition for AI-powered analysis and
+          diagnosis
+        </p>
+      </div>
+
+      <div class="main-layout {% if not prediction %}single-card{% endif %}">
+        <!-- Upload Section -->
+        <div class="section-card">
+          <form
+            id="upload-form"
+            class="upload-form"
+            action="{{ url_for('upload') }}"
+            method="post"
+            enctype="multipart/form-data"
+          >
+            <div class="form-group">
+              <label class="form-label">Upload Skin Image</label>
+              <div class="upload-area" id="upload-area">
+                <input
+                  id="file-upload"
+                  type="file"
+                  name="file"
+                  accept="image/*"
+                />
+                <div class="upload-icon">
+                  <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="upload-text">
+                  <h3>Click here or Drag & Drop</h3>
+                  <p>
+                    For best results, upload a clear, well-lit photo of the
+                    affected area
+                  </p>
+                </div>
+                <div id="file-name" class="file-name">
+                  <i class="fas fa-file-image"></i>
+                  <span>No file selected</span>
+                </div>
+
+                <button
+                  type="submit"
+                  id="analyze-button"
+                  class="analyze-button"
+                  disabled
+                >
+                  <i class="fas fa-microscope"></i> Analyze Image
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div class="error-message" id="error-message">
+            Please select a file before submitting.
+          </div>
+          <div id="loading-spinner" class="loading-spinner"></div>
+        </div>
+
+        <!-- Results Section -->
+        {% if prediction %}
+        <div class="section-card" id="results-section">
+          <div class="prediction-header">
+            <h2>Prediction Result</h2>
+            <div>
+              <strong>Diagnosis:</strong>
+              <span id="prediction-text" class="prediction-text"
+                >{{ prediction }}</span
+              >
+            </div>
+            {% if prediction != 'Unknown' and accuracy %}
+            <div class="accuracy-badge">
+              Confidence: <span id="accuracy-percentage">{{ accuracy }}%</span>
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="image-container">
+            <img
+              id="diagnosed-image"
+              src="{{ url_for('static', filename=img_path) }}"
+              alt="Uploaded Image"
+            />
+          </div>
+
+          <div class="action-buttons">
+            <button id="details-button" class="btn btn-detail">
+              <i class="fas fa-info-circle"></i> View Details
+            </button>
+            <button id="report-button" class="btn btn-report">
+              <i class="fas fa-flag"></i> Report Issue
+            </button>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="success-message" id="success-message"></div>
+    </div>
+
+    <!-- Condition Details Dialog -->
+    <div id="details-dialog" class="dialog-overlay">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <h3 class="dialog-title">Condition Details</h3>
+          <button class="dialog-close" id="details-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="dialog-body">
+          {% if prediction == 'Unknown' %}
+          <p>
+            Sorry, we don't have detailed information about this condition in
+            our database. We will update our information soon. Thank you for
+            your understanding.
+          </p>
+          {% elif details %}
+          <h3>{{ details['title'] }}</h3>
+          <p>{{ details['description'] }}</p>
+          <p><strong>Symptoms: </strong> {{ details['symptoms'] }}</p>
+          <p><strong>Treatment: </strong>{{ details['treatment'] }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Issue Dialog -->
+    <div id="report-dialog" class="dialog-overlay">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <h3 class="dialog-title">Report a Misdiagnosis or Issue</h3>
+          <button class="dialog-close" id="report-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="dialog-body">
+          <div class="report-form">
+            <textarea
+              id="report-text"
+              class="report-textarea"
+              placeholder="Please describe the issue with this diagnosis..."
+            ></textarea>
+            <button
+              type="button"
+              onclick="submitReport()"
+              class="btn btn-primary"
+            >
+              <i class="fas fa-paper-plane"></i> Send Report
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>
